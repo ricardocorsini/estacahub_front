@@ -5,6 +5,7 @@ import AppLayout from "./components/layout/AppLayout";
 import Home from "./pages/Home";
 import PerfilUsuario from "./pages/PerfilUsuario";
 import NotFound from "./pages/NotFound";
+import Auth from "./pages/Auth"; // 1. Importe o novo componente Auth
 
 import DadosObra from "./pages/workspace/DadosObra";
 import Sondagens from "./pages/workspace/Sondagens";
@@ -18,6 +19,9 @@ export default function App() {
   return (
     <BrowserRouter>
       <Routes>
+        {/* 2. Rota temporária de debug para testar o visual da tela de login */}
+        <Route path="/login" element={<Auth />} />
+
         {/* Tela inicial simples, sem sidebar */}
         <Route path="/" element={<Home />} />
 
