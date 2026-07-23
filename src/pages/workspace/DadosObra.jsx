@@ -40,6 +40,10 @@ function buildObraPayload(formData) {
     responsavelTecnico: formData.responsavelTecnico.trim() || null,
     observacoes: formData.observacoes.trim() || null,
     legendaFoto: formData.legendaFoto.trim() || null,
+
+    // Por enquanto, enviamos somente o nome do arquivo.
+    // O backend usa esse metadado para gerar uma URL S3 fictícia.
+    nomeArquivoFoto: formData.foto?.name || null,
   };
 }
 
