@@ -23,4 +23,11 @@ If you are developing a production application, we recommend using TypeScript wi
 - Opcional: mapa para selecionar uma coordenada do google maps. 
 - Verificar se a foto não é melhor mais formato padrão paisagem. 
 
+### Sondagens
+
+- No lançamento de sondagem precisamos criar alguns alertas/erros. Por exemplo: Solo ausente, NSPT = 0, Esqueceu de colocar o tipo de solo... não colocou a quantidade de solo suficiente para a profundidade da sondagem. Aviso para nível de água ausente... NSPT com vírgula, negativo etc. 
+- No lançamento da leitura, os inputs estão apertados. Arrumar. 
+- Criar o crtl + Z no lançamento da sondagem. 
+- Melhorar a imagem baixada do relatório. Está ruim.
+
 
