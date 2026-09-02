@@ -5,7 +5,7 @@ const obrasMock = [
   {
     id: 1,
     nome: "Residencial Jardim das Árvores",
-    local: "São Luís - MA",
+    local: "São Luís - MAA",
     atualizadoEm: "Hoje",
   },
   {
