@@ -573,7 +573,7 @@ export default function Sondagens() {
         <div className="fixed inset-0 z-50 flex items-center justify-center bg-slate-900/50 p-4 backdrop-blur-sm">
           <div className="w-full max-w-md rounded-2xl bg-white p-6 shadow-xl">
             <div className="mb-5">
-              <h3 className="text-lg font-bold text-slate-900">Criar nova sondagem</h3>
+              <h3 className="text-lg font-bold text-slate-900">Criar nova sondagem!</h3>
               <p className="mt-1 text-sm text-slate-500">
                 Insira o nome de identificação do novo furo.
               </p>
