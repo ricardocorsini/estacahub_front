@@ -1,6 +1,8 @@
 import { useState } from "react";
 import { Link } from "react-router-dom";
 
+import UserMenu from "../components/layout/UserMenu";
+
 const obrasMock = [
   {
     id: 1,
@@ -71,12 +73,7 @@ export default function Home() {
             </div>
           </div>
 
-          <Link
-            to="/perfil"
-            className="rounded-xl border border-slate-200 bg-white px-4 py-2 text-sm font-medium text-slate-700 shadow-sm transition-colors hover:bg-slate-50"
-          >
-            Perfil
-          </Link>
+          <UserMenu mostrarInicio={false} />
         </header>
 
         <section className="mb-8 max-w-4xl">

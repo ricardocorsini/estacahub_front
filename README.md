@@ -1,5 +1,26 @@
 # React + Vite
 
+Frontend do EstacaHub/EstacaCalc com React, Vite e Tailwind CSS.
+
+## Autenticação e endereço da API
+
+Crie `.env.local` a partir de `.env.example` para desenvolvimento. O build de
+produção usa `.env.production` e aponta para:
+
+```text
+https://api.estacahub.com/api
+```
+
+A sessão é mantida por cookie `HttpOnly`, portanto todas as chamadas usam
+`credentials: include`. Cadastro, login, restauração da sessão, proteção das
+rotas e logout estão centralizados em `AuthContext`.
+
+```bash
+npm ci
+npm run dev
+npm run build
+```
+
 This template provides a minimal setup to get React working in Vite with HMR and some ESLint rules.
 
 Currently, two official plugins are available:
@@ -29,5 +50,4 @@ If you are developing a production application, we recommend using TypeScript wi
 - No lançamento da leitura, os inputs estão apertados. Arrumar. 
 - Criar o crtl + Z no lançamento da sondagem. 
 - Melhorar a imagem baixada do relatório. Está ruim.
-
 
