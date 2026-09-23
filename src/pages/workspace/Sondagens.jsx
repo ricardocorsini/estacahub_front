@@ -1,36 +1,13 @@
-import { useMemo, useState } from "react";
+import { useEffect, useMemo, useState } from "react";
+import { useParams } from "react-router-dom";
+
 import PerfilSondagem from "../../components/workspace/sondagens/PerfilSondagem";
 import {
   TIPOS_SOLO,
   obterConfigFamilia,
   obterFamiliaSolo,
 } from "../../components/workspace/sondagens/soloConfig";
-
-const LEITURAS_SP01 = [
-  { id: 1, profundidade: 1, cota: 14.5, nspt: 5, solo: "Argila", familia: "Coesivo" },
-  { id: 2, profundidade: 2, cota: 13.5, nspt: 8, solo: "Argila", familia: "Coesivo" },
-  { id: 3, profundidade: 3, cota: 12.5, nspt: 10, solo: "Argila Silto-arenosa", familia: "Coesivo" },
-  { id: 4, profundidade: 4, cota: 11.5, nspt: 13, solo: "Argila Silto-arenosa", familia: "Coesivo" },
-  { id: 5, profundidade: 5, cota: 10.5, nspt: 16, solo: "Silte Arenoso", familia: "Intermediário" },
-  { id: 6, profundidade: 6, cota: 9.5, nspt: 21, solo: "Silte Arenoso", familia: "Intermediário" },
-  { id: 7, profundidade: 7, cota: 8.5, nspt: 27, solo: "Areia Siltosa", familia: "Granular" },
-  { id: 8, profundidade: 8, cota: 7.5, nspt: 34, solo: "Areia Siltosa", familia: "Granular" },
-  { id: 9, profundidade: 9, cota: 6.5, nspt: 41, solo: "Areia", familia: "Granular" },
-  { id: 10, profundidade: 10, cota: 5.5, nspt: 48, solo: "Areia", familia: "Granular" },
-  { id: 11, profundidade: 11, cota: 4.5, nspt: 50, solo: "Areia", familia: "Granular" },
-  { id: 12, profundidade: 12, cota: 3.5, nspt: 50, solo: "Areia", familia: "Granular" },
-];
-
-const LEITURAS_SP02 = [
-  { id: 21, profundidade: 1, cota: 14.2, nspt: 4, solo: "Argila Siltosa", familia: "Coesivo" },
-  { id: 22, profundidade: 2, cota: 13.2, nspt: 6, solo: "Argila Siltosa", familia: "Coesivo" },
-  { id: 23, profundidade: 3, cota: 12.2, nspt: 9, solo: "Silte Argiloso", familia: "Intermediário" },
-  { id: 24, profundidade: 4, cota: 11.2, nspt: 12, solo: "Silte Argiloso", familia: "Intermediário" },
-  { id: 25, profundidade: 5, cota: 10.2, nspt: 17, solo: "Areia Argilosa", familia: "Granular" },
-  { id: 26, profundidade: 6, cota: 9.2, nspt: 24, solo: "Areia Argilosa", familia: "Granular" },
-  { id: 27, profundidade: 7, cota: 8.2, nspt: 31, solo: "Areia", familia: "Granular" },
-  { id: 28, profundidade: 8, cota: 7.2, nspt: 39, solo: "Areia", familia: "Granular" },
-];
+import { sondagensService } from "../../services/sondagensService";
 
 const criarCabecalhoVazio = () => ({
   cotaBoca: "",
@@ -41,40 +18,49 @@ const criarCabecalhoVazio = () => ({
   coordY: "",
 });
 
-const SONDAGENS_INICIAIS = [
-  {
-    id: 1,
-    nome: "SP-01",
-    dadosCabecalho: {
-      cotaBoca: 15.5,
-      profundidadeFinal: 12,
-      criterio: "Impenetrável",
-      nivelAgua: 3.5,
-      coordX: 543210,
-      coordY: 9876540,
-    },
-    leituras: LEITURAS_SP01,
-  },
-  {
-    id: 2,
-    nome: "SP-02",
-    dadosCabecalho: {
-      cotaBoca: 15.2,
-      profundidadeFinal: 8,
-      criterio: "Solicitação do Contratante",
-      nivelAgua: 2.8,
-      coordX: 543245,
-      coordY: 9876512,
-    },
-    leituras: LEITURAS_SP02,
-  },
-];
-
 export default function Sondagens() {
-  const [sondagens, setSondagens] = useState(SONDAGENS_INICIAIS);
-  const [activeSondagemId, setActiveSondagemId] = useState(1);
+  const { obraId } = useParams();
+
+  return <SondagensDaObra key={obraId} obraId={obraId} />;
+}
+
+function SondagensDaObra({ obraId }) {
+  const [sondagens, setSondagens] = useState([]);
+  const [activeSondagemId, setActiveSondagemId] = useState(null);
   const [isModalOpen, setIsModalOpen] = useState(false);
   const [nomeNovaSondagem, setNomeNovaSondagem] = useState("");
+  const [carregando, setCarregando] = useState(true);
+  const [criando, setCriando] = useState(false);
+  const [salvando, setSalvando] = useState(false);
+  const [excluindo, setExcluindo] = useState(false);
+  const [erro, setErro] = useState("");
+  const [mensagem, setMensagem] = useState("");
+  const [alteracoesPendentes, setAlteracoesPendentes] = useState(
+    () => new Set(),
+  );
+
+  useEffect(() => {
+    let ativo = true;
+
+    sondagensService
+      .listar(obraId)
+      .then((dados) => {
+        if (!ativo) return;
+        setSondagens(dados);
+        setActiveSondagemId(dados[0]?.id ?? null);
+      })
+      .catch((error) => {
+        if (!ativo) return;
+        setErro(error.message || "Não foi possível carregar as sondagens.");
+      })
+      .finally(() => {
+        if (ativo) setCarregando(false);
+      });
+
+    return () => {
+      ativo = false;
+    };
+  }, [obraId]);
 
   const sondagemAtiva = useMemo(
     () => sondagens.find((sondagem) => sondagem.id === activeSondagemId),
@@ -84,36 +70,123 @@ export default function Sondagens() {
   const dadosCabecalho = sondagemAtiva?.dadosCabecalho ?? criarCabecalhoVazio();
   const leituras = sondagemAtiva?.leituras ?? [];
 
+  const marcarComoPendente = (sondagemId) => {
+    if (sondagemId == null) return;
+
+    setAlteracoesPendentes((atuais) => {
+      const proximas = new Set(atuais);
+      proximas.add(sondagemId);
+      return proximas;
+    });
+  };
+
+  const limparPendente = (sondagemId) => {
+    setAlteracoesPendentes((atuais) => {
+      const proximas = new Set(atuais);
+      proximas.delete(sondagemId);
+      return proximas;
+    });
+  };
+
   const atualizarSondagemAtiva = (transformar) => {
     setSondagens((atuais) =>
       atuais.map((sondagem) =>
         sondagem.id === activeSondagemId ? transformar(sondagem) : sondagem
       )
     );
+    marcarComoPendente(activeSondagemId);
+    setMensagem("");
   };
 
   const abrirModal = () => {
     setNomeNovaSondagem("");
+    setErro("");
+    setMensagem("");
     setIsModalOpen(true);
   };
 
   const fecharModal = () => setIsModalOpen(false);
 
-  const handleCriarSondagem = (event) => {
+  const handleCriarSondagem = async (event) => {
     event.preventDefault();
     const nome = nomeNovaSondagem.trim();
     if (!nome) return;
 
-    const novaSondagem = {
-      id: Date.now(),
-      nome,
-      dadosCabecalho: criarCabecalhoVazio(),
-      leituras: [],
-    };
+    setCriando(true);
+    setErro("");
 
-    setSondagens((atuais) => [...atuais, novaSondagem]);
-    setActiveSondagemId(novaSondagem.id);
-    fecharModal();
+    try {
+      const novaSondagem = await sondagensService.criar(obraId, {
+        nome,
+        dadosCabecalho: criarCabecalhoVazio(),
+        leituras: [],
+      });
+
+      setSondagens((atuais) => [...atuais, novaSondagem]);
+      setActiveSondagemId(novaSondagem.id);
+      setMensagem("Sondagem criada com sucesso.");
+      fecharModal();
+    } catch (error) {
+      setErro(error.message || "Não foi possível criar a sondagem.");
+    } finally {
+      setCriando(false);
+    }
+  };
+
+  const handleSalvarSondagem = async () => {
+    if (!sondagemAtiva) return;
+
+    setSalvando(true);
+    setErro("");
+    setMensagem("");
+
+    try {
+      const sondagemSalva = await sondagensService.atualizar(
+        obraId,
+        sondagemAtiva,
+      );
+
+      setSondagens((atuais) =>
+        atuais.map((sondagem) =>
+          sondagem.id === sondagemSalva.id ? sondagemSalva : sondagem,
+        ),
+      );
+      limparPendente(sondagemSalva.id);
+      setMensagem("Alterações salvas com sucesso.");
+    } catch (error) {
+      setErro(error.message || "Não foi possível salvar a sondagem.");
+    } finally {
+      setSalvando(false);
+    }
+  };
+
+  const handleExcluirSondagem = async () => {
+    if (!sondagemAtiva) return;
+
+    const confirmou = window.confirm(
+      `Deseja realmente excluir a sondagem ${sondagemAtiva.nome}?`,
+    );
+
+    if (!confirmou) return;
+
+    setExcluindo(true);
+    setErro("");
+    setMensagem("");
+
+    try {
+      await sondagensService.remover(obraId, sondagemAtiva.id);
+      const restantes = sondagens.filter(
+        (sondagem) => sondagem.id !== sondagemAtiva.id,
+      );
+      setSondagens(restantes);
+      setActiveSondagemId(restantes[0]?.id ?? null);
+      limparPendente(sondagemAtiva.id);
+      setMensagem("Sondagem excluída com sucesso.");
+    } catch (error) {
+      setErro(error.message || "Não foi possível excluir a sondagem.");
+    } finally {
+      setExcluindo(false);
+    }
   };
 
   const handleCabecalhoChange = (event) => {
@@ -291,8 +364,10 @@ export default function Sondagens() {
               </p>
             </div>
             <button
+              type="button"
               onClick={abrirModal}
-              className="flex items-center justify-center gap-2 rounded-lg bg-indigo-600 px-4 py-2 text-sm font-semibold text-white shadow-sm transition-colors hover:bg-indigo-700 focus:outline-none focus:ring-2 focus:ring-indigo-500 focus:ring-offset-2"
+              disabled={carregando}
+              className="flex items-center justify-center gap-2 rounded-lg bg-indigo-600 px-4 py-2 text-sm font-semibold text-white shadow-sm transition-colors hover:bg-indigo-700 focus:outline-none focus:ring-2 focus:ring-indigo-500 focus:ring-offset-2 disabled:cursor-not-allowed disabled:opacity-60"
             >
               <svg className="h-4 w-4" fill="none" stroke="currentColor" strokeWidth="2" viewBox="0 0 24 24">
                 <path strokeLinecap="round" strokeLinejoin="round" d="M12 4v16m8-8H4" />
@@ -301,33 +376,82 @@ export default function Sondagens() {
             </button>
           </div>
 
+          {erro && (
+            <div
+              role="alert"
+              className="mb-4 rounded-lg border border-red-200 bg-red-50 px-4 py-3 text-sm text-red-700"
+            >
+              {erro}
+            </div>
+          )}
+
+          {mensagem && (
+            <div
+              role="status"
+              className="mb-4 rounded-lg border border-emerald-200 bg-emerald-50 px-4 py-3 text-sm text-emerald-700"
+            >
+              {mensagem}
+            </div>
+          )}
+
           <div className="grid grid-cols-1 gap-3 sm:grid-cols-2 lg:grid-cols-4 xl:grid-cols-6">
+            {carregando && (
+              <div className="col-span-full rounded-xl border border-slate-200 bg-white px-4 py-8 text-center text-sm text-slate-500">
+                Carregando sondagens...
+              </div>
+            )}
+
+            {!carregando && sondagens.length === 0 && (
+              <div className="col-span-full rounded-xl border border-dashed border-slate-300 bg-white px-4 py-8 text-center text-sm text-slate-500">
+                Nenhuma sondagem cadastrada nesta obra. Crie a primeira para
+                começar.
+              </div>
+            )}
+
             {sondagens.map((sondagem) => {
               const estaAtiva = activeSondagemId === sondagem.id;
               const totalLeituras = sondagem.leituras.length;
               const cotaExibida = sondagem.dadosCabecalho.cotaBoca;
 
               return (
-              <button
-                key={sondagem.id}
-                onClick={() => setActiveSondagemId(sondagem.id)}
-                className={`flex flex-col rounded-xl border p-3 text-left transition-all ${
-                  estaAtiva
-                    ? "border-indigo-600 bg-indigo-50 shadow-sm ring-1 ring-indigo-600"
-                    : "border-slate-200 bg-white hover:border-indigo-300 hover:bg-slate-50"
-                }`}
-              >
-                <span className="text-base font-bold text-slate-900">{sondagem.nome}</span>
-                <div className="mt-1.5 flex items-center justify-between text-xs text-slate-600">
-                  <span>{totalLeituras} leituras</span>
-                  <span>{cotaExibida === "-" || cotaExibida === "" ? "Sem cota" : `Boca ${cotaExibida} m`}</span>
-                </div>
-              </button>
+                <button
+                  type="button"
+                  key={sondagem.id}
+                  onClick={() => {
+                    setActiveSondagemId(sondagem.id);
+                    setMensagem("");
+                  }}
+                  className={`flex flex-col rounded-xl border p-3 text-left transition-all ${
+                    estaAtiva
+                      ? "border-indigo-600 bg-indigo-50 shadow-sm ring-1 ring-indigo-600"
+                      : "border-slate-200 bg-white hover:border-indigo-300 hover:bg-slate-50"
+                  }`}
+                >
+                  <span className="flex items-center gap-2 text-base font-bold text-slate-900">
+                    {sondagem.nome}
+                    {alteracoesPendentes.has(sondagem.id) && (
+                      <span
+                        className="h-2 w-2 rounded-full bg-amber-500"
+                        title="Alterações não salvas"
+                      />
+                    )}
+                  </span>
+                  <div className="mt-1.5 flex w-full items-center justify-between text-xs text-slate-600">
+                    <span>{totalLeituras} leituras</span>
+                    <span>
+                      {cotaExibida === "-" || cotaExibida === ""
+                        ? "Sem cota"
+                        : `Boca ${cotaExibida} m`}
+                    </span>
+                  </div>
+                </button>
               );
             })}
           </div>
         </div>
 
+        {sondagemAtiva ? (
+          <>
         <section className="rounded-2xl border border-slate-200 bg-white p-4 shadow-sm">
           <div className="mb-3 flex items-center justify-between">
             <div>
@@ -337,6 +461,28 @@ export default function Sondagens() {
               <h2 className="text-base font-bold text-slate-800">
                 {sondagemAtiva?.nome ?? "Sondagem"}
               </h2>
+            </div>
+            <div className="flex items-center gap-2">
+              <button
+                type="button"
+                onClick={handleExcluirSondagem}
+                disabled={excluindo || salvando}
+                className="rounded-lg border border-red-200 px-3 py-2 text-xs font-semibold text-red-600 transition-colors hover:bg-red-50 disabled:cursor-not-allowed disabled:opacity-60"
+              >
+                {excluindo ? "Excluindo..." : "Excluir"}
+              </button>
+              <button
+                type="button"
+                onClick={handleSalvarSondagem}
+                disabled={
+                  salvando ||
+                  excluindo ||
+                  !alteracoesPendentes.has(sondagemAtiva.id)
+                }
+                className="rounded-lg bg-indigo-600 px-3 py-2 text-xs font-semibold text-white shadow-sm transition-colors hover:bg-indigo-700 disabled:cursor-not-allowed disabled:opacity-50"
+              >
+                {salvando ? "Salvando..." : "Salvar alterações"}
+              </button>
             </div>
           </div>
 
@@ -420,6 +566,7 @@ export default function Sondagens() {
                 </p>
               </div>
               <button
+                type="button"
                 onClick={adicionarLeitura}
                 className="flex items-center gap-1.5 rounded-lg bg-slate-800 px-3 py-2 text-xs font-semibold text-white shadow-sm transition-colors hover:bg-slate-700"
               >
@@ -505,6 +652,7 @@ export default function Sondagens() {
                         <td className="px-1.5 py-2 align-top">
                           <div className="flex items-center justify-center gap-1">
                             <button
+                              type="button"
                               onClick={() => duplicarLeitura(leitura.id)}
                               className="rounded-md p-1.5 text-slate-400 transition-colors hover:bg-indigo-50 hover:text-indigo-600"
                               title="Duplicar leitura"
@@ -529,6 +677,7 @@ export default function Sondagens() {
                               </svg>
                             </button>
                             <button
+                              type="button"
                               onClick={() => removerLeitura(leitura.id)}
                               className="rounded-md p-1.5 text-slate-400 transition-colors hover:bg-red-50 hover:text-red-600"
                               title="Remover leitura"
@@ -567,6 +716,19 @@ export default function Sondagens() {
             coordY={dadosCabecalho.coordY}
           />
         </div>
+          </>
+        ) : (
+          !carregando && (
+            <section className="rounded-2xl border border-dashed border-slate-300 bg-white px-6 py-12 text-center shadow-sm">
+              <h2 className="text-base font-bold text-slate-800">
+                Comece criando uma sondagem
+              </h2>
+              <p className="mt-1 text-sm text-slate-500">
+                Os dados do furo e suas leituras NSPT aparecerão aqui.
+              </p>
+            </section>
+          )
+        )}
       </div>
 
       {isModalOpen && (
@@ -578,6 +740,15 @@ export default function Sondagens() {
                 Insira o nome de identificação do novo furo.
               </p>
             </div>
+
+            {erro && (
+              <div
+                role="alert"
+                className="mb-4 rounded-lg border border-red-200 bg-red-50 px-3 py-2 text-sm text-red-700"
+              >
+                {erro}
+              </div>
+            )}
 
             <form onSubmit={handleCriarSondagem}>
               <label htmlFor="nomeSondagem" className="mb-1.5 block text-sm font-semibold text-slate-700">
@@ -591,6 +762,8 @@ export default function Sondagens() {
                 placeholder="Ex.: SP-03"
                 required
                 autoFocus
+                maxLength={100}
+                disabled={criando}
                 className="w-full rounded-lg border border-slate-300 px-4 py-2.5 text-sm text-slate-900 focus:border-indigo-500 focus:outline-none focus:ring-1 focus:ring-indigo-500"
               />
 
@@ -598,15 +771,17 @@ export default function Sondagens() {
                 <button
                   type="button"
                   onClick={fecharModal}
-                  className="rounded-lg px-4 py-2.5 text-sm font-medium text-slate-600 hover:bg-slate-50"
+                  disabled={criando}
+                  className="rounded-lg px-4 py-2.5 text-sm font-medium text-slate-600 hover:bg-slate-50 disabled:cursor-not-allowed disabled:opacity-60"
                 >
                   Cancelar
                 </button>
                 <button
                   type="submit"
-                  className="rounded-lg bg-indigo-600 px-5 py-2.5 text-sm font-semibold text-white shadow-sm hover:bg-indigo-700"
+                  disabled={criando}
+                  className="rounded-lg bg-indigo-600 px-5 py-2.5 text-sm font-semibold text-white shadow-sm hover:bg-indigo-700 disabled:cursor-not-allowed disabled:opacity-60"
                 >
-                  Criar sondagem
+                  {criando ? "Criando..." : "Criar sondagem"}
                 </button>
               </div>
             </form>
