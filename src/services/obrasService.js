@@ -1,5 +1,7 @@
 import { apiRequest } from "./api";
 
+export const OBRAS_ATUALIZADAS_EVENT = "estacahub:obras-atualizadas";
+
 export const obrasService = {
   listar() {
     return apiRequest("/obras");

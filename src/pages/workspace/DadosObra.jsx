@@ -1,6 +1,10 @@
 import { useEffect, useRef, useState } from "react";
+import { useNavigate, useParams } from "react-router-dom";
 
-import { obrasService } from "../../services/obrasService";
+import {
+  OBRAS_ATUALIZADAS_EVENT,
+  obrasService,
+} from "../../services/obrasService";
 
 const INITIAL_FORM_DATA = {
   nome: "",
@@ -49,6 +53,8 @@ function buildObraPayload(formData) {
 
 export default function DadosObra() {
   const fileInputRef = useRef(null);
+  const navigate = useNavigate();
+  const { obraId } = useParams();
 
   const [formData, setFormData] = useState(INITIAL_FORM_DATA);
   const [obras, setObras] = useState([]);
@@ -66,13 +72,25 @@ export default function DadosObra() {
 
   const selectedObra = obras.find((obra) => obra.id === selectedObraId);
 
-  async function carregarObras() {
+  async function carregarObras(obraIdPreferencial = obraId) {
     try {
-      setIsLoadingObras(true);
+      const data = await obrasService.listar();
+      const listaObras = Array.isArray(data) ? data : [];
+      const obraDaRota = listaObras.find(
+        (obra) => String(obra.id) === String(obraIdPreferencial),
+      );
+
+      setObras(listaObras);
       setErrorMessage("");
 
-      const data = await obrasService.listar();
-      setObras(Array.isArray(data) ? data : []);
+      if (obraDaRota) {
+        setSelectedObraId(obraDaRota.id);
+        setFormData(normalizeObraToForm(obraDaRota));
+      } else if (obraIdPreferencial) {
+        setSelectedObraId(null);
+        setFormData(INITIAL_FORM_DATA);
+        setErrorMessage("A obra informada na URL não foi encontrada.");
+      }
     } catch (error) {
       setErrorMessage(error.message || "Erro ao carregar obras.");
     } finally {
@@ -81,8 +99,42 @@ export default function DadosObra() {
   }
 
   useEffect(() => {
-    carregarObras();
-  }, []);
+    let ativo = true;
+
+    obrasService
+      .listar()
+      .then((dados) => {
+        if (!ativo) return;
+
+        const listaObras = Array.isArray(dados) ? dados : [];
+        const obraDaRota = listaObras.find(
+          (obra) => String(obra.id) === String(obraId),
+        );
+
+        setObras(listaObras);
+        setErrorMessage("");
+
+        if (obraDaRota) {
+          setSelectedObraId(obraDaRota.id);
+          setFormData(normalizeObraToForm(obraDaRota));
+        } else {
+          setSelectedObraId(null);
+          setFormData(INITIAL_FORM_DATA);
+          setErrorMessage("A obra informada na URL não foi encontrada.");
+        }
+      })
+      .catch((error) => {
+        if (!ativo) return;
+        setErrorMessage(error.message || "Erro ao carregar obras.");
+      })
+      .finally(() => {
+        if (ativo) setIsLoadingObras(false);
+      });
+
+    return () => {
+      ativo = false;
+    };
+  }, [obraId]);
 
   useEffect(() => {
     return () => {
@@ -119,6 +171,7 @@ export default function DadosObra() {
     setSelectedObraId(obra.id);
     setFormData(normalizeObraToForm(obra));
     clearMessages();
+    navigate(`/obras/${obra.id}/dados`);
 
     if (fileInputRef.current) {
       fileInputRef.current.value = "";
@@ -221,10 +274,11 @@ export default function DadosObra() {
         setFeedbackMessage("Obra cadastrada com sucesso.");
       }
 
-      await carregarObras();
-
       setSelectedObraId(savedObra.id);
       setFormData(normalizeObraToForm(savedObra));
+      navigate(`/obras/${savedObra.id}/dados`, { replace: isEditing });
+      await carregarObras(savedObra.id);
+      window.dispatchEvent(new Event(OBRAS_ATUALIZADAS_EVENT));
 
       if (fileInputRef.current) {
         fileInputRef.current.value = "";
@@ -252,9 +306,8 @@ export default function DadosObra() {
       await obrasService.remover(selectedObraId);
 
       resetForm();
-      await carregarObras();
-
-      setFeedbackMessage("Obra removida com sucesso.");
+      window.dispatchEvent(new Event(OBRAS_ATUALIZADAS_EVENT));
+      navigate("/", { replace: true });
     } catch (error) {
       setErrorMessage(error.message || "Erro ao remover obra.");
     } finally {
@@ -296,7 +349,11 @@ export default function DadosObra() {
 
           <button
             type="button"
-            onClick={carregarObras}
+            onClick={() => {
+              setIsLoadingObras(true);
+              setErrorMessage("");
+              carregarObras();
+            }}
             disabled={isLoadingObras}
             className="rounded-lg border border-slate-300 px-4 py-2 text-sm font-semibold text-slate-700 transition-colors hover:bg-slate-50 disabled:cursor-not-allowed disabled:opacity-60"
           >

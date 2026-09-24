@@ -1,36 +1,56 @@
+import { useEffect, useState } from "react";
 import { NavLink, useNavigate, useParams } from "react-router-dom";
 
+import {
+  OBRAS_ATUALIZADAS_EVENT,
+  obrasService,
+} from "../../services/obrasService";
 import UserMenu from "./UserMenu";
-
-
-const obrasMock = [
-  {
-    id: "1",
-    nome: "Residencial Jardim das Árvores",
-    local: "São Luís - MA",
-  },
-  {
-    id: "2",
-    nome: "Galpão Industrial BR-135",
-    local: "Bacabeira - MA",
-  },
-  {
-    id: "3",
-    nome: "Ampliação Escola Municipal",
-    local: "Raposa - MA",
-  },
-];
-
 
 export default function Header() {
   const { obraId } = useParams();
   const navigate = useNavigate();
+  const [obras, setObras] = useState([]);
+  const [carregandoObras, setCarregandoObras] = useState(true);
+  const [erroObras, setErroObras] = useState("");
 
-  const obraAtual =
-    obrasMock.find((obra) => obra.id === obraId) || obrasMock[0];
+  useEffect(() => {
+    let ativo = true;
+
+    const carregarObras = () => {
+      obrasService
+        .listar()
+        .then((dados) => {
+          if (!ativo) return;
+          setObras(Array.isArray(dados) ? dados : []);
+          setErroObras("");
+        })
+        .catch((error) => {
+          if (!ativo) return;
+          setErroObras(error.message || "Não foi possível carregar as obras.");
+        })
+        .finally(() => {
+          if (ativo) setCarregandoObras(false);
+        });
+    };
+
+    carregarObras();
+    window.addEventListener(OBRAS_ATUALIZADAS_EVENT, carregarObras);
+
+    return () => {
+      ativo = false;
+      window.removeEventListener(OBRAS_ATUALIZADAS_EVENT, carregarObras);
+    };
+  }, []);
+
+  const obraAtual = obras.find((obra) => String(obra.id) === String(obraId));
+  const obraAtualId = obraAtual?.id ?? obraId;
 
   function handleTrocarObra(event) {
-    navigate(`/obras/${event.target.value}/dados`);
+    const novaObraId = event.target.value;
+    if (!novaObraId) return;
+
+    navigate(`/obras/${novaObraId}/dados`);
   }
 
   return (
@@ -66,11 +86,20 @@ export default function Header() {
               </p>
 
               <select
-                value={obraAtual.id}
+                value={obraAtual ? String(obraAtual.id) : ""}
                 onChange={handleTrocarObra}
-                className="max-w-[180px] truncate rounded-xl border border-slate-200 bg-white px-3 py-2 text-sm font-semibold text-slate-800 outline-none transition-colors hover:bg-slate-50 focus:border-indigo-300 focus:ring-4 focus:ring-indigo-100 sm:max-w-[260px] lg:max-w-[360px]"
+                disabled={carregandoObras || obras.length === 0}
+                title={erroObras || undefined}
+                className="max-w-[180px] truncate rounded-xl border border-slate-200 bg-white px-3 py-2 text-sm font-semibold text-slate-800 outline-none transition-colors hover:bg-slate-50 focus:border-indigo-300 focus:ring-4 focus:ring-indigo-100 disabled:cursor-not-allowed disabled:bg-slate-50 disabled:text-slate-500 sm:max-w-[260px] lg:max-w-[360px]"
               >
-                {obrasMock.map((obra) => (
+                {!obraAtual && (
+                  <option value="">
+                    {carregandoObras
+                      ? "Carregando obras..."
+                      : "Obra não encontrada"}
+                  </option>
+                )}
+                {obras.map((obra) => (
                   <option key={obra.id} value={obra.id}>
                     {obra.nome}
                   </option>
@@ -79,24 +108,30 @@ export default function Header() {
             </div>
           </div>
 
-          <div className="hidden items-center gap-2 rounded-full border border-emerald-100 bg-emerald-50 px-3 py-1.5 xl:flex">
-            <span className="h-2 w-2 rounded-full bg-emerald-500" />
-            <span className="text-xs font-semibold text-emerald-700">
-              Alterações salvas
-            </span>
-          </div>
+          {erroObras ? (
+            <div className="hidden items-center gap-2 rounded-full border border-red-100 bg-red-50 px-3 py-1.5 text-xs font-semibold text-red-700 xl:flex">
+              Falha ao carregar obras
+            </div>
+          ) : (
+            <div className="hidden items-center gap-2 rounded-full border border-emerald-100 bg-emerald-50 px-3 py-1.5 xl:flex">
+              <span className="h-2 w-2 rounded-full bg-emerald-500" />
+              <span className="text-xs font-semibold text-emerald-700">
+                Obra sincronizada
+              </span>
+            </div>
+          )}
         </div>
 
         <div className="flex items-center gap-2 sm:gap-3">
           <NavLink
-            to={`/obras/${obraAtual.id}/sondagens`}
+            to={`/obras/${obraAtualId}/sondagens`}
             className="hidden items-center justify-center rounded-xl bg-indigo-50 px-4 py-2 text-sm font-semibold text-indigo-700 transition-colors hover:bg-indigo-100 lg:inline-flex"
           >
             + Nova sondagem
           </NavLink>
 
           <NavLink
-            to={`/obras/${obraAtual.id}/cadastro-estacas`}
+            to={`/obras/${obraAtualId}/cadastro-estacas`}
             className="hidden items-center justify-center rounded-xl bg-slate-900 px-4 py-2 text-sm font-semibold text-white shadow-sm transition-colors hover:bg-slate-800 lg:inline-flex"
           >
             + Nova estaca
@@ -108,14 +143,14 @@ export default function Header() {
 
       <div className="flex gap-2 border-t border-slate-100 py-3 md:hidden">
         <NavLink
-          to={`/obras/${obraAtual.id}/sondagens`}
+          to={`/obras/${obraAtualId}/sondagens`}
           className="flex flex-1 items-center justify-center rounded-xl bg-indigo-50 px-3 py-2 text-xs font-semibold text-indigo-700"
         >
           + Sondagem
         </NavLink>
 
         <NavLink
-          to={`/obras/${obraAtual.id}/cadastro-estacas`}
+          to={`/obras/${obraAtualId}/cadastro-estacas`}
           className="flex flex-1 items-center justify-center rounded-xl bg-slate-900 px-3 py-2 text-xs font-semibold text-white"
         >
           + Estaca
@@ -123,7 +158,7 @@ export default function Header() {
 
         <div className="flex flex-1 items-center justify-center gap-1 rounded-xl border border-emerald-100 bg-emerald-50 px-3 py-2 text-xs font-semibold text-emerald-700">
           <span className="h-1.5 w-1.5 rounded-full bg-emerald-500" />
-          Salvo
+          Sincronizada
         </div>
       </div>
     </header>

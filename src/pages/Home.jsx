@@ -1,53 +1,80 @@
-import { useState } from "react";
-import { Link } from "react-router-dom";
+import { useEffect, useState } from "react";
+import { Link, useNavigate } from "react-router-dom";
 
 import UserMenu from "../components/layout/UserMenu";
+import { obrasService } from "../services/obrasService";
 
-const obrasMock = [
-  {
-    id: 1,
-    nome: "Residencial Jardim das Árvores",
-    local: "São Luís - MA",
-    atualizadoEm: "Hoje",
-  },
-  {
-    id: 2,
-    nome: "Galpão Industrial BR-135",
-    local: "Bacabeira - MA",
-    atualizadoEm: "Ontem",
-  },
-  {
-    id: 3,
-    nome: "Ampliação Escola Municipal",
-    local: "Raposa - MA",
-    atualizadoEm: "23/05/2026",
-  },
-  {
-    id: 4,
-    nome: "Centro Comercial Avenida Principal",
-    local: "São José de Ribamar - MA",
-    atualizadoEm: "20/05/2026",
-  },
-];
+function formatarAtualizacao(valor) {
+  if (!valor) return "não informada";
+
+  const data = new Date(valor);
+
+  if (Number.isNaN(data.getTime())) return "não informada";
+
+  return new Intl.DateTimeFormat("pt-BR", {
+    dateStyle: "short",
+    timeStyle: "short",
+  }).format(data);
+}
 
 export default function Home() {
-  const [obras, setObras] = useState(obrasMock);
+  const navigate = useNavigate();
+  const [obras, setObras] = useState([]);
   const [nomeObra, setNomeObra] = useState("");
+  const [carregando, setCarregando] = useState(true);
+  const [criando, setCriando] = useState(false);
+  const [erro, setErro] = useState("");
+  const [recarregar, setRecarregar] = useState(0);
 
-  function handleCriarObra(event) {
+  useEffect(() => {
+    let ativo = true;
+
+    obrasService
+      .listar()
+      .then((dados) => {
+        if (!ativo) return;
+        setObras(Array.isArray(dados) ? dados : []);
+      })
+      .catch((error) => {
+        if (!ativo) return;
+        setErro(error.message || "Não foi possível carregar as obras.");
+      })
+      .finally(() => {
+        if (ativo) setCarregando(false);
+      });
+
+    return () => {
+      ativo = false;
+    };
+  }, [recarregar]);
+
+  async function handleCriarObra(event) {
     event.preventDefault();
 
-    if (!nomeObra.trim()) return;
+    const nome = nomeObra.trim();
+    if (!nome) return;
 
-    const novaObra = {
-      id: Date.now(),
-      nome: nomeObra,
-      local: "Local não informado",
-      atualizadoEm: "Agora",
-    };
+    setCriando(true);
+    setErro("");
 
-    setObras((current) => [novaObra, ...current]);
-    setNomeObra("");
+    try {
+      const novaObra = await obrasService.criar({
+        nome,
+        sistemaCoordenadas: "local",
+      });
+
+      navigate(`/obras/${novaObra.id}/dados`);
+    } catch (error) {
+      setErro(error.message || "Não foi possível criar a obra.");
+    } finally {
+      setCriando(false);
+    }
+  }
+
+  function tentarNovamente() {
+    setCarregando(true);
+    setErro("");
+    setRecarregar((valor) => valor + 1);
   }
 
   const obrasRecentes = obras.slice(0, 4);
@@ -91,6 +118,22 @@ export default function Home() {
           </p>
         </section>
 
+        {erro && (
+          <div
+            role="alert"
+            className="mb-6 flex flex-col gap-3 rounded-xl border border-red-200 bg-red-50 px-4 py-3 text-sm text-red-700 sm:flex-row sm:items-center sm:justify-between"
+          >
+            <span>{erro}</span>
+            <button
+              type="button"
+              onClick={tentarNovamente}
+              className="font-semibold text-red-700 underline underline-offset-2"
+            >
+              Tentar novamente
+            </button>
+          </div>
+        )}
+
         <section className="mb-8 grid grid-cols-1 gap-6 xl:grid-cols-[420px_1fr]">
           <div className="rounded-2xl border border-slate-200 bg-white p-5 shadow-sm">
             <h3 className="text-base font-semibold text-slate-900">
@@ -106,14 +149,18 @@ export default function Home() {
                 value={nomeObra}
                 onChange={(event) => setNomeObra(event.target.value)}
                 placeholder="Nome da nova obra"
-                className="h-11 w-full rounded-xl border border-slate-200 bg-white px-4 text-sm text-slate-900 outline-none transition-colors placeholder:text-slate-400 focus:border-indigo-300 focus:ring-4 focus:ring-indigo-100"
+                maxLength={200}
+                disabled={criando}
+                required
+                className="h-11 w-full rounded-xl border border-slate-200 bg-white px-4 text-sm text-slate-900 outline-none transition-colors placeholder:text-slate-400 focus:border-indigo-300 focus:ring-4 focus:ring-indigo-100 disabled:cursor-not-allowed disabled:bg-slate-50"
               />
 
               <button
                 type="submit"
-                className="h-11 w-full rounded-xl bg-indigo-600 px-5 text-sm font-semibold text-white shadow-sm shadow-indigo-600/20 transition-colors hover:bg-indigo-700"
+                disabled={criando}
+                className="h-11 w-full rounded-xl bg-indigo-600 px-5 text-sm font-semibold text-white shadow-sm shadow-indigo-600/20 transition-colors hover:bg-indigo-700 disabled:cursor-not-allowed disabled:opacity-60"
               >
-                Criar obra
+                {criando ? "Criando..." : "Criar obra"}
               </button>
             </form>
           </div>
@@ -125,7 +172,7 @@ export default function Home() {
                   Obras recentes
                 </h3>
                 <p className="mt-1 text-sm text-slate-500">
-                  Acesse rapidamente as últimas obras manipuladas.
+                  Acesse rapidamente as últimas obras cadastradas.
                 </p>
               </div>
 
@@ -134,25 +181,37 @@ export default function Home() {
               </span>
             </div>
 
-            <div className="grid gap-3 sm:grid-cols-2 xl:grid-cols-4">
-              {obrasRecentes.map((obra) => (
-                <Link
-                  key={obra.id}
-                  to={`/obras/${obra.id}/dados`}
-                  className="rounded-2xl border border-slate-200 bg-slate-50/60 p-4 transition-all hover:-translate-y-0.5 hover:border-indigo-200 hover:bg-white hover:shadow-md"
-                >
-                  <p className="line-clamp-2 text-sm font-semibold text-slate-900">
-                    {obra.nome}
-                  </p>
+            {carregando ? (
+              <div className="rounded-xl border border-dashed border-slate-300 bg-slate-50 px-4 py-10 text-center text-sm text-slate-500">
+                Carregando obras...
+              </div>
+            ) : obrasRecentes.length === 0 ? (
+              <div className="rounded-xl border border-dashed border-slate-300 bg-slate-50 px-4 py-10 text-center text-sm text-slate-500">
+                Nenhuma obra cadastrada ainda.
+              </div>
+            ) : (
+              <div className="grid gap-3 sm:grid-cols-2 xl:grid-cols-4">
+                {obrasRecentes.map((obra) => (
+                  <Link
+                    key={obra.id}
+                    to={`/obras/${obra.id}/dados`}
+                    className="rounded-2xl border border-slate-200 bg-slate-50/60 p-4 transition-all hover:-translate-y-0.5 hover:border-indigo-200 hover:bg-white hover:shadow-md"
+                  >
+                    <p className="line-clamp-2 text-sm font-semibold text-slate-900">
+                      {obra.nome}
+                    </p>
 
-                  <p className="mt-2 text-xs text-slate-500">{obra.local}</p>
+                    <p className="mt-2 text-xs text-slate-500">
+                      {obra.localizacao || "Localização não informada"}
+                    </p>
 
-                  <p className="mt-4 text-xs font-medium text-indigo-600">
-                    Abrir obra
-                  </p>
-                </Link>
-              ))}
-            </div>
+                    <p className="mt-4 text-xs font-medium text-indigo-600">
+                      Abrir obra
+                    </p>
+                  </Link>
+                ))}
+              </div>
+            )}
           </div>
         </section>
 
@@ -173,31 +232,42 @@ export default function Home() {
             </span>
           </div>
 
-          <div className="divide-y divide-slate-100">
-            {obras.map((obra) => (
-              <div
-                key={obra.id}
-                className="flex flex-col gap-3 px-5 py-4 transition-colors hover:bg-slate-50 sm:flex-row sm:items-center sm:justify-between"
-              >
-                <div>
-                  <h4 className="text-sm font-semibold text-slate-900">
-                    {obra.nome}
-                  </h4>
-
-                  <p className="mt-1 text-xs text-slate-500">
-                    {obra.local} · Atualizada: {obra.atualizadoEm}
-                  </p>
-                </div>
-
-                <Link
-                  to={`/obras/${obra.id}/dados`}
-                  className="inline-flex items-center justify-center rounded-xl bg-slate-900 px-4 py-2 text-sm font-semibold text-white transition-colors hover:bg-slate-800"
+          {carregando ? (
+            <div className="px-5 py-12 text-center text-sm text-slate-500">
+              Carregando obras cadastradas...
+            </div>
+          ) : obras.length === 0 ? (
+            <div className="px-5 py-12 text-center text-sm text-slate-500">
+              Cadastre sua primeira obra para acessar o ambiente de cálculo.
+            </div>
+          ) : (
+            <div className="divide-y divide-slate-100">
+              {obras.map((obra) => (
+                <div
+                  key={obra.id}
+                  className="flex flex-col gap-3 px-5 py-4 transition-colors hover:bg-slate-50 sm:flex-row sm:items-center sm:justify-between"
                 >
-                  Abrir
-                </Link>
-              </div>
-            ))}
-          </div>
+                  <div>
+                    <h4 className="text-sm font-semibold text-slate-900">
+                      {obra.nome}
+                    </h4>
+
+                    <p className="mt-1 text-xs text-slate-500">
+                      {obra.localizacao || "Localização não informada"} ·
+                      Atualizada: {formatarAtualizacao(obra.atualizadoEm)}
+                    </p>
+                  </div>
+
+                  <Link
+                    to={`/obras/${obra.id}/dados`}
+                    className="inline-flex items-center justify-center rounded-xl bg-slate-900 px-4 py-2 text-sm font-semibold text-white transition-colors hover:bg-slate-800"
+                  >
+                    Abrir
+                  </Link>
+                </div>
+              ))}
+            </div>
+          )}
         </section>
 
         <footer className="py-8 text-center text-xs text-slate-400">
