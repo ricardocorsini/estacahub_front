@@ -9,6 +9,7 @@ import AccountLayout from "./components/layout/AccountLayout";
 import AppLayout from "./components/layout/AppLayout";
 
 import Home from "./pages/Home";
+import Dashboard from "./pages/Dashboard";
 import PerfilUsuario from "./pages/PerfilUsuario";
 import Configuracoes from "./pages/Configuracoes";
 import NotFound from "./pages/NotFound";
@@ -27,6 +28,8 @@ export default function App() {
     <AuthProvider>
       <BrowserRouter>
         <Routes>
+          <Route path="/" element={<Home />} />
+
           <Route
             path="/login"
             element={(
@@ -37,7 +40,7 @@ export default function App() {
           />
 
           <Route element={<ProtectedRoute />}>
-            <Route path="/" element={<Home />} />
+            <Route path="/dashboard" element={<Dashboard />} />
 
             <Route element={<AccountLayout />}>
               <Route path="/perfil" element={<PerfilUsuario />} />
