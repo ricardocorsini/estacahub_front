@@ -46,7 +46,7 @@ export function PublicOnlyRoute({ children }) {
   }
 
   if (autenticado) {
-    return <Navigate to="/" replace />;
+    return <Navigate to="/dashboard" replace />;
   }
 
   return children;
