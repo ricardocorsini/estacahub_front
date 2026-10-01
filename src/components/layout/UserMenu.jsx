@@ -56,7 +56,7 @@ export default function UserMenu({ mostrarInicio = true }) {
 
     try {
       await sair();
-      navigate("/login", { replace: true });
+      navigate("/", { replace: true });
     } finally {
       setSaindo(false);
       setAberto(false);
@@ -101,7 +101,11 @@ export default function UserMenu({ mostrarInicio = true }) {
 
           <div className="p-2">
             {mostrarInicio && (
-              <MenuLink to="/" icon={House} onClick={() => setAberto(false)}>
+              <MenuLink
+                to="/dashboard"
+                icon={House}
+                onClick={() => setAberto(false)}
+              >
                 Início
               </MenuLink>
             )}
