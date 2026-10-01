@@ -190,7 +190,7 @@ export default function Sidebar() {
       {/* Rodapé (Trocar Obra) */}
       <div className="border-t border-slate-100 p-4 shrink-0 mt-auto">
         <NavLink
-          to="/"
+          to="/dashboard"
           title={isCollapsed ? "Trocar obra" : undefined}
           className={`flex items-center rounded-xl border border-slate-200 bg-white py-2.5 text-sm font-semibold text-slate-700 transition-all hover:bg-slate-50 ${isCollapsed ? "justify-center px-0" : "px-4"}`}
         >
