@@ -1,6 +1,10 @@
 import { Eye, EyeOff, LoaderCircle } from "lucide-react";
 import { useState } from "react";
-import { useLocation, useNavigate } from "react-router-dom";
+import {
+  useLocation,
+  useNavigate,
+  useSearchParams,
+} from "react-router-dom";
 
 import { useAuth } from "../context/AuthContext";
 
@@ -16,9 +20,10 @@ const initialFormData = {
 export default function Auth() {
   const navigate = useNavigate();
   const location = useLocation();
+  const [searchParams, setSearchParams] = useSearchParams();
   const { entrar, cadastrar } = useAuth();
 
-  const [isLogin, setIsLogin] = useState(true);
+  const isLogin = searchParams.get("modo") !== "cadastro";
   const [formData, setFormData] = useState(initialFormData);
   const [mostrarSenha, setMostrarSenha] = useState(false);
   const [enviando, setEnviando] = useState(false);
@@ -58,7 +63,7 @@ export default function Auth() {
       const origem = location.state?.from;
       const destino = origem
         ? `${origem.pathname}${origem.search || ""}${origem.hash || ""}`
-        : "/";
+        : "/dashboard";
 
       navigate(destino, { replace: true });
     } catch (error) {
@@ -73,7 +78,9 @@ export default function Auth() {
   }
 
   function toggleMode() {
-    setIsLogin((current) => !current);
+    const novosParametros = new URLSearchParams(searchParams);
+    novosParametros.set("modo", isLogin ? "cadastro" : "entrar");
+    setSearchParams(novosParametros, { replace: true });
     setFormData(initialFormData);
     setMostrarSenha(false);
     setErro("");

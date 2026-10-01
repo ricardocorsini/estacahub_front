@@ -18,7 +18,7 @@ export default function NotFound() {
         to="/"
         className="mt-8 inline-flex items-center justify-center rounded-lg bg-slate-900 px-5 py-2.5 text-sm font-medium text-white transition-colors hover:bg-slate-800"
       >
-        Voltar ao Dashboard
+        Voltar à página inicial
       </Link>
     </div>
   );

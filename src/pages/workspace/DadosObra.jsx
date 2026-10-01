@@ -307,7 +307,7 @@ export default function DadosObra() {
 
       resetForm();
       window.dispatchEvent(new Event(OBRAS_ATUALIZADAS_EVENT));
-      navigate("/", { replace: true });
+      navigate("/dashboard", { replace: true });
     } catch (error) {
       setErrorMessage(error.message || "Erro ao remover obra.");
     } finally {
