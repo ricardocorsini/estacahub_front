@@ -12,7 +12,7 @@ export default function AccountLayout() {
       <div className="relative z-10 flex min-h-screen flex-col">
         <header className="sticky top-0 z-30 border-b border-slate-200 bg-white/85 px-4 shadow-sm backdrop-blur-xl sm:px-6 lg:px-10">
           <div className="mx-auto flex h-16 max-w-6xl items-center justify-between">
-            <Link to="/" className="flex items-center gap-3">
+            <Link to="/dashboard" className="flex items-center gap-3">
               <span className="flex h-9 w-9 items-center justify-center rounded-xl bg-indigo-600 text-xs font-bold tracking-wider text-white shadow-sm">
                 EC
               </span>
