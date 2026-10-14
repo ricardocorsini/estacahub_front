@@ -16,6 +16,7 @@ import {
 } from "lucide-react";
 import { Link } from "react-router-dom";
 
+import BrandMark from "../components/layout/BrandMark";
 import { useAuth } from "../context/AuthContext";
 import "./Home.css";
 
@@ -387,20 +388,6 @@ export default function Home() {
         </div>
       </footer>
     </div>
-  );
-}
-
-function BrandMark({ compact = false }) {
-  return (
-    <span
-      className={`landing-brand-mark ${compact ? "h-8 w-8 rounded-[10px]" : "h-9 w-9 rounded-xl"}`}
-      aria-hidden="true"
-    >
-      <span className="landing-brand-line landing-brand-line-1" />
-      <span className="landing-brand-line landing-brand-line-2" />
-      <span className="landing-brand-line landing-brand-line-3" />
-      <span className="landing-brand-dot" />
-    </span>
   );
 }
 
