@@ -75,14 +75,14 @@ export default function UserMenu({ mostrarInicio = true }) {
         <span className="user-menu-avatar flex h-8 w-8 shrink-0 items-center justify-center rounded-lg bg-indigo-100 text-xs font-bold text-indigo-700">
           {obterIniciais(usuario?.nome)}
         </span>
-        <span className="hidden max-w-32 sm:block">
+        <span className="user-menu-details hidden max-w-32 sm:block">
           <span className="user-menu-name block truncate text-xs font-semibold text-slate-800">
             {usuario?.nome}
           </span>
           <span className="user-menu-info block text-[10px] text-slate-500">Minha conta</span>
         </span>
         <ChevronDown
-          className={`hidden h-4 w-4 text-slate-400 transition-transform sm:block ${
+          className={`user-menu-chevron hidden h-4 w-4 text-slate-400 transition-transform sm:block ${
             aberto ? "rotate-180" : ""
           }`}
         />
