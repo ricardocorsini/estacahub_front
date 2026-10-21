@@ -51,3 +51,7 @@ If you are developing a production application, we recommend using TypeScript wi
 - Criar o crtl + Z no lançamento da sondagem. 
 - Melhorar a imagem baixada do relatório. Está ruim.
 
+### Tela da edição de obra
+
+- Essa tela é a que aparece logo após clicar em uma obra. Se torna dispensável a escolha de obra nessa tela, acaba ficando poluído. Remover. Fazer isso, utilizando o plugin no GPT com o github. 
+
