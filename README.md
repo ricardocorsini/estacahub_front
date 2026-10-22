@@ -55,3 +55,7 @@ If you are developing a production application, we recommend using TypeScript wi
 
 - Essa tela é a que aparece logo após clicar em uma obra. Se torna dispensável a escolha de obra nessa tela, acaba ficando poluído. Remover. Fazer isso, utilizando o plugin no GPT com o github. 
 
+### ESTACAS 
+
+- Melhorar o mini-mapa. Precisa ter uma locação maior, e melhor organizado na tela. Além disso, exportar um bom dxf, com eixos, e tudo que for necessário. 
+
