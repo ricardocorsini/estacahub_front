@@ -22,3 +22,8 @@ dist-ssr
 *.njsproj
 *.sln
 *.sw?
+
+# Verificações locais reproduzíveis
+test-results/
+playwright-report/
+artifacts/

@@ -126,7 +126,7 @@ const TENSAO_REFERENCIA_MPA = {
 export function numero(valor) {
   if (
     valor == null ||
-    typeof valor === "boolean" ||
+    !["number", "string"].includes(typeof valor) ||
     String(valor).trim() === ""
   )
     return null;

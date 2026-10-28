@@ -12,6 +12,7 @@ import {
 } from "lucide-react";
 
 import { formatarNumero, nomeTipoEstaca } from "../../../utils/estacas";
+import { posicionarRotulos } from "../../../utils/locacaoRotulos";
 import { enquadrarLocacao, pontosLocacao } from "../../../utils/locacao";
 
 export default function MiniMapaLocacao({
@@ -62,40 +63,11 @@ export default function MiniMapaLocacao({
     onSelecionar(null);
   }
 
-  // Posiciona rótulos em alternativas simples, evitando sobreposição entre nomes.
-  const caixas = [{ x: 325, y: 0, w: 131, h: 62 }];
-  const pontosDesenhados = visiveis.map((p) => {
-    const pos = quadro.projetar(p);
-    const largura = Math.min(138, p.nome.length * 6.2 + 10);
-    const alternativas = [
-      [12, -12],
-      [12, 19],
-      [-largura - 10, -12],
-      [-largura - 10, 19],
-      [12, -30],
-      [12, 37],
-    ];
-    let rotulo = { x: pos.x + 12, y: pos.y - 12 };
-    for (const [dx, dy] of alternativas) {
-      const x = Math.max(60, Math.min(pos.x + dx, 416 - largura));
-      const y = Math.max(45, Math.min(pos.y + dy, 266));
-      const caixa = { x, y: y - 12, w: largura, h: 16 };
-      if (
-        !caixas.some(
-          (c) =>
-            c.x < caixa.x + caixa.w &&
-            c.x + c.w > caixa.x &&
-            c.y < caixa.y + caixa.h &&
-            c.y + c.h > caixa.y,
-        )
-      ) {
-        rotulo = { x, y };
-        caixas.push(caixa);
-        break;
-      }
-    }
-    return { ...p, pos, rotulo, larguraRotulo: largura };
-  });
+  const pontosDesenhados = posicionarRotulos(
+    visiveis.map((p) => ({ ...p, pos: quadro.projetar(p) })),
+    { esquerda: 60, topo: 45, direita: 416, fundo: 266,
+      reservadas: [{ x: 325, y: 0, w: 131, h: 62 }] },
+  );
 
   return (
     <aside
@@ -252,7 +224,7 @@ export default function MiniMapaLocacao({
                   {p.nome} · X {formatarNumero(p.x, 3)} m · Y{" "}
                   {formatarNumero(p.y, 3)} m
                 </title>
-                {mostrarNomes && (
+                {mostrarNomes && p.rotulo && (
                   <rect
                     x={Math.min(p.pos.x - 15, p.rotulo.x - 4)}
                     y={Math.min(p.pos.y - 15, p.rotulo.y - 12)}
@@ -297,7 +269,7 @@ export default function MiniMapaLocacao({
                     strokeWidth={2}
                   />
                 )}
-                {mostrarNomes && (
+                {mostrarNomes && p.rotulo && (
                   <text
                     x={p.rotulo.x}
                     y={p.rotulo.y}

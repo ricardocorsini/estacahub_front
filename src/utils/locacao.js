@@ -1,65 +1,78 @@
 import { numero } from "./estacas.js";
+import { enquadrarCamera, projetarPonto, temPosicao } from "./locacaoCamera.js";
 
 export function pontosLocacao(estacas, sondagens) {
   return [
-    ...estacas.map((estaca) => ({
-      chave: `estaca-${estaca.id}`,
-      tipo: "estaca",
-      nome: estaca.nome,
-      x: numero(estaca.coordX),
-      y: numero(estaca.coordY),
-      dados: estaca,
-    })),
-    ...sondagens.map((sondagem) => ({
-      chave: `sondagem-${sondagem.id}`,
+    ...estacas.map((estaca, indice) => {
+      const diametro = numero(estaca.diametroCm);
+      return {
+        chave: "estaca-" + (estaca.id ?? indice),
+        tipo: "estaca",
+        referencia: "E" + String(indice + 1).padStart(3, "0"),
+        nome: estaca.nome || "Estaca sem nome",
+        x: numero(estaca.coordX),
+        y: numero(estaca.coordY),
+        raio: diametro != null && diametro > 0 ? diametro / 200 : null,
+        dados: estaca,
+      };
+    }),
+    ...sondagens.map((sondagem, indice) => ({
+      chave: "sondagem-" + (sondagem.id ?? indice),
       tipo: "sondagem",
-      nome: sondagem.nome,
+      referencia: "S" + String(indice + 1).padStart(3, "0"),
+      nome: sondagem.nome || "Sondagem sem nome",
       x: numero(sondagem.dadosCabecalho?.coordX),
       y: numero(sondagem.dadosCabecalho?.coordY),
+      raio: null,
       dados: sondagem,
     })),
   ];
 }
 
-// Mesma escala em X/Y. Usa diferenças relativas para coordenadas UTM grandes.
+export function normalizarLocacao(obra, estacas, sondagens) {
+  if (!obra || !Array.isArray(estacas) || !Array.isArray(sondagens))
+    throw new Error("A consulta da obra está incompleta. Atualize os dados.");
+  const pontos = pontosLocacao(estacas, sondagens);
+  return {
+    obra,
+    pontos,
+    estacas: pontos.filter((p) => p.tipo === "estaca"),
+    sondagens: pontos.filter((p) => p.tipo === "sondagem"),
+    localizados: pontos.filter(temPosicao),
+    semLocacao: pontos.filter((p) => !temPosicao(p)),
+  };
+}
+
+// Contrato do minimapa preservado, com a mesma projeção de escala uniforme da planta.
 export function enquadrarLocacao(pontos, zoom = 1) {
-  const validos = pontos.filter((ponto) => ponto.x != null && ponto.y != null);
-  let minX = 0,
-    maxX = 10,
-    minY = 0,
-    maxY = 10;
-  if (validos.length) {
-    minX = maxX = validos[0].x;
-    minY = maxY = validos[0].y;
-    for (const p of validos) {
-      minX = Math.min(minX, p.x);
-      maxX = Math.max(maxX, p.x);
-      minY = Math.min(minY, p.y);
-      maxY = Math.max(maxY, p.y);
-    }
-  }
   const largura = 360,
     altura = 240,
     esquerda = 58,
     topo = 32;
-  const cx = (minX + maxX) / 2,
-    cy = (minY + maxY) / 2;
-  const unidadePorPixel =
-    (Math.max((maxX - minX) / largura, (maxY - minY) / altura, 0.015) * 1.3) /
-    zoom;
-  const inicioX = cx - (largura * unidadePorPixel) / 2;
-  const inicioY = cy - (altura * unidadePorPixel) / 2;
+  const validos = pontos.filter(temPosicao);
+  const camera = enquadrarCamera(
+    validos.length
+      ? validos
+      : [
+          { x: 0, y: 0 },
+          { x: 10, y: 10 },
+        ],
+    largura,
+    altura,
+    0,
+  );
+  camera.mPorPixel = (Math.max(camera.mPorPixel, 0.015) * 1.3) / zoom;
   return {
     largura,
     altura,
     esquerda,
     topo,
-    unidadePorPixel,
-    inicioX,
-    inicioY,
-    projetar: (p) => ({
-      x: esquerda + (p.x - inicioX) / unidadePorPixel,
-      y: topo + altura - (p.y - inicioY) / unidadePorPixel,
-    }),
+    unidadePorPixel: camera.mPorPixel,
+    inicioX: camera.x - (largura * camera.mPorPixel) / 2,
+    inicioY: camera.y - (altura * camera.mPorPixel) / 2,
+    projetar: (p) => {
+      const pos = projetarPonto(p, camera, { largura, altura });
+      return { x: pos.x + esquerda, y: pos.y + topo };
+    },
   };
 }
