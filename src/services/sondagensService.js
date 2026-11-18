@@ -43,8 +43,8 @@ function criarPayload(sondagem) {
 }
 
 export const sondagensService = {
-  async listar(obraId) {
-    const sondagens = await apiRequest(`/obras/${obraId}/sondagens`);
+  async listar(obraId, { signal } = {}) {
+    const sondagens = await apiRequest(`/obras/${obraId}/sondagens`, { signal });
     return sondagens.map(normalizarSondagem);
   },
 
