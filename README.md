@@ -50,6 +50,8 @@ If you are developing a production application, we recommend using TypeScript wi
 - No lançamento da leitura, os inputs estão apertados. Arrumar. 
 - Criar o crtl + Z no lançamento da sondagem. 
 - Melhorar a imagem baixada do relatório. Está ruim.
+- Inserir comando para duplicar sondagem.
+- Melhorias no layout dessa tela. 
 
 ### Tela da edição de obra
 
@@ -57,5 +59,12 @@ If you are developing a production application, we recommend using TypeScript wi
 
 ### ESTACAS 
 
-- Melhorar o mini-mapa. Precisa ter uma locação maior, e melhor organizado na tela. Além disso, exportar um bom dxf, com eixos, e tudo que for necessário. 
+- Melhorar o mini-mapa. Precisa ter uma locação maior, e melhor organizado na tela. Além disso, exportar um bom dxf, com eixos, e tudo que for necessário.
+
+### CARGA ADMÍSSÍVEL 
+
+- Organizar melhor a tela, para informações mais visíveis. 
+
+
+
 
