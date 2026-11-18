@@ -14,8 +14,8 @@ function payloadEstaca(estaca) {
 }
 
 export const estacasService = {
-  listar(obraId) {
-    return apiRequest(`/obras/${obraId}/estacas`);
+  listar(obraId, { signal } = {}) {
+    return apiRequest(`/obras/${obraId}/estacas`, { signal });
   },
   criar(obraId, estaca) {
     return apiRequest(`/obras/${obraId}/estacas`, {

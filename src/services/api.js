@@ -13,6 +13,10 @@ function obterMensagemErro(data, status) {
     return data.detail;
   }
 
+  if (typeof data?.detail?.mensagem === "string") {
+    return data.detail.mensagem;
+  }
+
   if (Array.isArray(data?.detail)) {
     return data.detail
       .map((item) => item?.msg)
@@ -46,13 +50,16 @@ export async function apiRequest(endpoint, options = {}) {
 
   try {
     response = await fetch(url, config);
-  } catch {
+  } catch (error) {
+    if (options.signal?.aborted) throw error;
     throw new Error(
       "Não foi possível conectar à API. Verifique sua conexão e tente novamente.",
+      { cause: error },
     );
   }
 
   const data = await response.json().catch(() => null);
+  options.signal?.throwIfAborted();
 
   if (!response.ok) {
     if (
@@ -62,7 +69,10 @@ export async function apiRequest(endpoint, options = {}) {
       window.dispatchEvent(new Event(AUTH_UNAUTHORIZED_EVENT));
     }
 
-    throw new Error(obterMensagemErro(data, response.status));
+    const error = new Error(obterMensagemErro(data, response.status));
+    error.status = response.status;
+    error.codigo = data?.detail?.codigo;
+    throw error;
   }
 
   return data;
