@@ -11,6 +11,10 @@ export const obrasService = {
     return apiRequest(`/obras/${id}`);
   },
 
+  abrirExemploBalsas() {
+    return apiRequest("/obras/exemplos/balsas", { method: "POST" });
+  },
+
   criar(payload) {
     return apiRequest("/obras", {
       method: "POST",
