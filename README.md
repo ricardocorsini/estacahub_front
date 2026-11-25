@@ -68,3 +68,16 @@ If you are developing a production application, we recommend using TypeScript wi
 
 
 
+
+## Relatórios da obra
+
+Em **Relatórios**, selecione uma ou todas as estacas e sondagens, ajuste os critérios e clique em **Preparar relatórios**. O servidor calcula cada par no modo por sondagem pelos métodos Décourt–Quaresma e Aoki–Velloso. As quatro saídas usam a mesma preparação e data de emissão.
+
+| Saída | Conteúdo |
+| --- | --- |
+| XLSX | Dez abas com identificação, cadastros, leituras SPT, resumo, curvas numéricas, parâmetros e memória de ponta e fuste. |
+| PDF compacto | Quadro de atendimento por par, carga prevista, cota e capacidades dos dois métodos. |
+| PDF completo | Resumo, cadastros, leituras, curvas, gráfico e memorial detalhado em uma cota por par. |
+| JSON | Contrato de intercâmbio `estacahub-relatorio` 1.0.0. O [JSON Schema](public/schemas/relatorio-v1.json) usa o padrão 2020-12. |
+
+No JSON, associe `analises[].estacaId` e `sondagemId` aos registros dos vetores exportados. `cotaAtendeM` é a maior cota amostrada em que os dois métodos alcançam a carga prevista positiva. Quando o campo é nulo, o memorial mostra a cota mais profunda calculada. Pares com erro de perfil têm `estado: "indisponivel"`, código e mensagem. Falhas de sessão ou comunicação interrompem a preparação. Em obras sem pares, as saídas contêm os cadastros disponíveis. Cotas e profundidades estão em metros, diâmetros em centímetros e as unidades de força constam nos campos. Valores ausentes usam `null`.

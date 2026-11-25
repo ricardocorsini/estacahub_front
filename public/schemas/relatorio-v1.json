@@ -1,0 +1,1047 @@
+{
+  "$schema": "https://json-schema.org/draft/2020-12/schema",
+  "title": "Relatório EstacaHub 1.0.0",
+  "$defs": {
+    "AmostraGrade": {
+      "additionalProperties": false,
+      "properties": {
+        "leituraId": {
+          "type": "integer"
+        },
+        "cotaGradeM": {
+          "type": "integer"
+        },
+        "cotaLeituraM": {
+          "type": "number"
+        },
+        "nsptMedido": {
+          "type": "integer"
+        },
+        "solo": {
+          "type": "string"
+        },
+        "familia": {
+          "enum": [
+            "Granular",
+            "Intermediário",
+            "Coesivo"
+          ],
+          "type": "string"
+        }
+      },
+      "required": [
+        "leituraId",
+        "cotaGradeM",
+        "cotaLeituraM",
+        "nsptMedido",
+        "solo",
+        "familia"
+      ],
+      "type": "object"
+    },
+    "AmostraPonta": {
+      "additionalProperties": false,
+      "properties": {
+        "leituraId": {
+          "type": "integer"
+        },
+        "cotaGradeM": {
+          "type": "integer"
+        },
+        "cotaLeituraM": {
+          "type": "number"
+        },
+        "nsptMedido": {
+          "type": "integer"
+        },
+        "solo": {
+          "type": "string"
+        },
+        "familia": {
+          "enum": [
+            "Granular",
+            "Intermediário",
+            "Coesivo"
+          ],
+          "type": "string"
+        },
+        "nsptUsado": {
+          "type": "integer"
+        }
+      },
+      "required": [
+        "leituraId",
+        "cotaGradeM",
+        "cotaLeituraM",
+        "nsptMedido",
+        "solo",
+        "familia",
+        "nsptUsado"
+      ],
+      "type": "object"
+    },
+    "AtritoAokiVelloso": {
+      "additionalProperties": false,
+      "properties": {
+        "nsptUsado": {
+          "type": "integer"
+        },
+        "tensaoKpa": {
+          "type": "number"
+        },
+        "resistenciaKn": {
+          "type": "number"
+        },
+        "kKpa": {
+          "type": "number"
+        },
+        "alfaPercentual": {
+          "type": "number"
+        },
+        "f2": {
+          "type": "number"
+        }
+      },
+      "required": [
+        "nsptUsado",
+        "tensaoKpa",
+        "resistenciaKn",
+        "kKpa",
+        "alfaPercentual",
+        "f2"
+      ],
+      "type": "object"
+    },
+    "AtritoDecourtQuaresma": {
+      "additionalProperties": false,
+      "properties": {
+        "nsptUsado": {
+          "type": "integer"
+        },
+        "tensaoKpa": {
+          "type": "number"
+        },
+        "resistenciaKn": {
+          "type": "number"
+        },
+        "beta": {
+          "type": "number"
+        }
+      },
+      "required": [
+        "nsptUsado",
+        "tensaoKpa",
+        "resistenciaKn",
+        "beta"
+      ],
+      "type": "object"
+    },
+    "Calculada": {
+      "properties": {
+        "estado": {
+          "const": "calculado",
+          "type": "string"
+        },
+        "estacaId": {
+          "type": "integer"
+        },
+        "sondagemId": {
+          "type": "integer"
+        },
+        "cotaAtendeM": {
+          "anyOf": [
+            {
+              "type": "integer"
+            },
+            {
+              "type": "null"
+            }
+          ]
+        },
+        "resultado": {
+          "$ref": "#/$defs/Resultado"
+        }
+      },
+      "required": [
+        "estado",
+        "estacaId",
+        "sondagemId",
+        "cotaAtendeM",
+        "resultado"
+      ],
+      "type": "object"
+    },
+    "CamadaAtrito": {
+      "additionalProperties": false,
+      "properties": {
+        "amostra": {
+          "$ref": "#/$defs/AmostraGrade"
+        },
+        "cotaBaseM": {
+          "type": "integer"
+        },
+        "desprezada": {
+          "type": "boolean"
+        },
+        "decourtQuaresma": {
+          "$ref": "#/$defs/AtritoDecourtQuaresma"
+        },
+        "aokiVelloso": {
+          "$ref": "#/$defs/AtritoAokiVelloso"
+        }
+      },
+      "required": [
+        "amostra",
+        "cotaBaseM",
+        "decourtQuaresma",
+        "aokiVelloso"
+      ],
+      "type": "object"
+    },
+    "CargaPorMetodo": {
+      "additionalProperties": false,
+      "properties": {
+        "resistenciaLateralKn": {
+          "type": "number"
+        },
+        "resistenciaPontaBrutaKn": {
+          "type": "number"
+        },
+        "resistenciaPontaKn": {
+          "type": "number"
+        },
+        "resistenciaRupturaKn": {
+          "type": "number"
+        },
+        "cargaAdmissivelGlobalKn": {
+          "type": "number"
+        },
+        "cargaAdmissivelParcialKn": {
+          "anyOf": [
+            {
+              "type": "number"
+            },
+            {
+              "type": "null"
+            }
+          ]
+        },
+        "cargaAdmissivelGeotecnicaKn": {
+          "type": "number"
+        },
+        "cargaAdmissivelGeotecnicaTf": {
+          "type": "number"
+        },
+        "cargaAdmissivelFinalKn": {
+          "type": "number"
+        },
+        "cargaAdmissivelFinalTf": {
+          "type": "number"
+        },
+        "criterioGovernante": {
+          "enum": [
+            "geotecnico_global",
+            "geotecnico_parcial",
+            "estrutural"
+          ],
+          "type": "string"
+        },
+        "pontaLimitadaPorAtrito": {
+          "type": "boolean"
+        }
+      },
+      "required": [
+        "resistenciaLateralKn",
+        "resistenciaPontaBrutaKn",
+        "resistenciaPontaKn",
+        "resistenciaRupturaKn",
+        "cargaAdmissivelGlobalKn",
+        "cargaAdmissivelParcialKn",
+        "cargaAdmissivelGeotecnicaKn",
+        "cargaAdmissivelGeotecnicaTf",
+        "cargaAdmissivelFinalKn",
+        "cargaAdmissivelFinalTf",
+        "criterioGovernante",
+        "pontaLimitadaPorAtrito"
+      ],
+      "type": "object"
+    },
+    "CotaPontaResultado": {
+      "additionalProperties": false,
+      "properties": {
+        "cotaPontaM": {
+          "type": "integer"
+        },
+        "comprimentoNaGradeM": {
+          "type": "integer"
+        },
+        "nsptPonta": {
+          "type": "integer"
+        },
+        "quantidadeLeiturasPonta": {
+          "type": "integer"
+        },
+        "comprimentoFusteSemSptM": {
+          "type": "integer"
+        },
+        "ultimoMetroDesprezado": {
+          "type": "boolean"
+        },
+        "decourtQuaresma": {
+          "$ref": "#/$defs/CargaPorMetodo"
+        },
+        "aokiVelloso": {
+          "$ref": "#/$defs/CargaPorMetodo"
+        }
+      },
+      "required": [
+        "cotaPontaM",
+        "comprimentoNaGradeM",
+        "nsptPonta",
+        "quantidadeLeiturasPonta",
+        "comprimentoFusteSemSptM",
+        "ultimoMetroDesprezado",
+        "decourtQuaresma",
+        "aokiVelloso"
+      ],
+      "type": "object"
+    },
+    "DadosCabecalhoSondagem": {
+      "properties": {
+        "cotaBoca": {
+          "anyOf": [
+            {
+              "type": "number"
+            },
+            {
+              "type": "null"
+            }
+          ]
+        },
+        "profundidadeFinal": {
+          "anyOf": [
+            {
+              "minimum": 0,
+              "type": "number"
+            },
+            {
+              "type": "null"
+            }
+          ]
+        },
+        "criterio": {
+          "anyOf": [
+            {
+              "maxLength": 100,
+              "type": "string"
+            },
+            {
+              "type": "null"
+            }
+          ]
+        },
+        "nivelAgua": {
+          "anyOf": [
+            {
+              "minimum": 0,
+              "type": "number"
+            },
+            {
+              "type": "null"
+            }
+          ]
+        },
+        "coordX": {
+          "anyOf": [
+            {
+              "type": "number"
+            },
+            {
+              "type": "null"
+            }
+          ]
+        },
+        "coordY": {
+          "anyOf": [
+            {
+              "type": "number"
+            },
+            {
+              "type": "null"
+            }
+          ]
+        }
+      },
+      "type": "object"
+    },
+    "EstacaResponse": {
+      "additionalProperties": false,
+      "properties": {
+        "nome": {
+          "maxLength": 100,
+          "minLength": 1,
+          "type": "string"
+        },
+        "coordX": {
+          "maximum": 999999999,
+          "minimum": -999999999,
+          "type": "number"
+        },
+        "coordY": {
+          "maximum": 999999999,
+          "minimum": -999999999,
+          "type": "number"
+        },
+        "tipo": {
+          "enum": [
+            "helice_continua",
+            "escavada_seco",
+            "escavada_fluido",
+            "pre_moldada_cravada",
+            "raiz"
+          ],
+          "type": "string"
+        },
+        "diametroCm": {
+          "maximum": 10000,
+          "minimum": 1e-06,
+          "type": "number"
+        },
+        "capacidadeEstruturalTf": {
+          "maximum": 999999999,
+          "minimum": 1e-06,
+          "type": "number"
+        },
+        "cotaArrasamento": {
+          "maximum": 999999999,
+          "minimum": -999999999,
+          "type": "number"
+        },
+        "cargaPrevistaTf": {
+          "maximum": 999999999,
+          "minimum": 0,
+          "type": "number"
+        },
+        "id": {
+          "type": "integer"
+        },
+        "obraId": {
+          "type": "integer"
+        },
+        "criadoEm": {
+          "format": "date-time",
+          "type": "string"
+        },
+        "atualizadoEm": {
+          "format": "date-time",
+          "type": "string"
+        }
+      },
+      "required": [
+        "nome",
+        "coordX",
+        "coordY",
+        "tipo",
+        "diametroCm",
+        "capacidadeEstruturalTf",
+        "cotaArrasamento",
+        "cargaPrevistaTf",
+        "id",
+        "obraId",
+        "criadoEm",
+        "atualizadoEm"
+      ],
+      "type": "object"
+    },
+    "Indisponivel": {
+      "properties": {
+        "estado": {
+          "const": "indisponivel",
+          "type": "string"
+        },
+        "estacaId": {
+          "type": "integer"
+        },
+        "sondagemId": {
+          "type": "integer"
+        },
+        "codigo": {
+          "type": "string"
+        },
+        "mensagem": {
+          "type": "string"
+        }
+      },
+      "required": [
+        "estado",
+        "estacaId",
+        "sondagemId",
+        "codigo",
+        "mensagem"
+      ],
+      "type": "object"
+    },
+    "LeituraSondagemResponse": {
+      "properties": {
+        "profundidade": {
+          "anyOf": [
+            {
+              "minimum": 0,
+              "type": "number"
+            },
+            {
+              "type": "null"
+            }
+          ]
+        },
+        "cota": {
+          "anyOf": [
+            {
+              "type": "number"
+            },
+            {
+              "type": "null"
+            }
+          ]
+        },
+        "nspt": {
+          "anyOf": [
+            {
+              "minimum": 0,
+              "type": "integer"
+            },
+            {
+              "type": "null"
+            }
+          ]
+        },
+        "solo": {
+          "anyOf": [
+            {
+              "maxLength": 100,
+              "type": "string"
+            },
+            {
+              "type": "null"
+            }
+          ]
+        },
+        "familia": {
+          "anyOf": [
+            {
+              "maxLength": 30,
+              "type": "string"
+            },
+            {
+              "type": "null"
+            }
+          ]
+        },
+        "id": {
+          "type": "integer"
+        }
+      },
+      "required": [
+        "id"
+      ],
+      "type": "object"
+    },
+    "MemorialCargaAdmissivel": {
+      "additionalProperties": false,
+      "properties": {
+        "cotaPontaM": {
+          "type": "integer"
+        },
+        "leiturasPonta": {
+          "items": {
+            "$ref": "#/$defs/AmostraPonta"
+          },
+          "type": "array"
+        },
+        "camadasAtrito": {
+          "items": {
+            "$ref": "#/$defs/CamadaAtrito"
+          },
+          "type": "array"
+        },
+        "trechosSemSpt": {
+          "items": {
+            "$ref": "#/$defs/TrechoSemSPT"
+          },
+          "type": "array"
+        },
+        "pontaDecourtQuaresma": {
+          "$ref": "#/$defs/PontaDecourtQuaresma"
+        },
+        "pontaAokiVelloso": {
+          "$ref": "#/$defs/PontaAokiVelloso"
+        }
+      },
+      "required": [
+        "cotaPontaM",
+        "leiturasPonta",
+        "camadasAtrito",
+        "trechosSemSpt",
+        "pontaDecourtQuaresma",
+        "pontaAokiVelloso"
+      ],
+      "type": "object"
+    },
+    "ObraResponse": {
+      "properties": {
+        "nome": {
+          "maxLength": 200,
+          "minLength": 1,
+          "type": "string"
+        },
+        "numero": {
+          "anyOf": [
+            {
+              "maxLength": 50,
+              "type": "string"
+            },
+            {
+              "type": "null"
+            }
+          ]
+        },
+        "localizacao": {
+          "anyOf": [
+            {
+              "maxLength": 255,
+              "type": "string"
+            },
+            {
+              "type": "null"
+            }
+          ]
+        },
+        "dataCadastro": {
+          "anyOf": [
+            {
+              "format": "date",
+              "type": "string"
+            },
+            {
+              "type": "null"
+            }
+          ]
+        },
+        "sistemaCoordenadas": {
+          "enum": [
+            "local",
+            "utm"
+          ],
+          "type": "string"
+        },
+        "responsavelTecnico": {
+          "anyOf": [
+            {
+              "maxLength": 255,
+              "type": "string"
+            },
+            {
+              "type": "null"
+            }
+          ]
+        },
+        "observacoes": {
+          "anyOf": [
+            {
+              "type": "string"
+            },
+            {
+              "type": "null"
+            }
+          ]
+        },
+        "legendaFoto": {
+          "anyOf": [
+            {
+              "maxLength": 255,
+              "type": "string"
+            },
+            {
+              "type": "null"
+            }
+          ]
+        },
+        "id": {
+          "type": "integer"
+        },
+        "fotoUrl": {
+          "anyOf": [
+            {
+              "type": "string"
+            },
+            {
+              "type": "null"
+            }
+          ]
+        },
+        "criadoEm": {
+          "format": "date-time",
+          "type": "string"
+        },
+        "atualizadoEm": {
+          "format": "date-time",
+          "type": "string"
+        }
+      },
+      "required": [
+        "nome",
+        "id",
+        "criadoEm",
+        "atualizadoEm"
+      ],
+      "type": "object"
+    },
+    "OpcoesCargaAdmissivel": {
+      "additionalProperties": false,
+      "properties": {
+        "desprezaUltimoMetroAtrito": {
+          "type": "boolean"
+        },
+        "aplicaRedutorPonta": {
+          "type": "boolean"
+        },
+        "tratamentoPonta": {
+          "enum": [
+            "calculado",
+            "contato_com_ressalva",
+            "sem_contato"
+          ],
+          "type": "string"
+        },
+        "limitaPontaPorAtrito": {
+          "type": "boolean"
+        }
+      },
+      "type": "object"
+    },
+    "PontaAokiVelloso": {
+      "additionalProperties": false,
+      "properties": {
+        "kKpa": {
+          "type": "number"
+        },
+        "f1": {
+          "type": "number"
+        },
+        "tensaoKpa": {
+          "type": "number"
+        }
+      },
+      "required": [
+        "kKpa",
+        "f1",
+        "tensaoKpa"
+      ],
+      "type": "object"
+    },
+    "PontaDecourtQuaresma": {
+      "additionalProperties": false,
+      "properties": {
+        "cKpa": {
+          "type": "number"
+        },
+        "alfa": {
+          "type": "number"
+        },
+        "tensaoKpa": {
+          "type": "number"
+        }
+      },
+      "required": [
+        "cKpa",
+        "alfa",
+        "tensaoKpa"
+      ],
+      "type": "object"
+    },
+    "Resultado": {
+      "additionalProperties": false,
+      "properties": {
+        "obraId": {
+          "type": "integer"
+        },
+        "estacaId": {
+          "type": "integer"
+        },
+        "sondagemId": {
+          "type": "integer"
+        },
+        "nomeEstaca": {
+          "type": "string"
+        },
+        "nomeSondagem": {
+          "type": "string"
+        },
+        "tipoEstaca": {
+          "enum": [
+            "helice_continua",
+            "escavada_seco",
+            "escavada_fluido",
+            "pre_moldada_cravada",
+            "raiz"
+          ],
+          "type": "string"
+        },
+        "diametroCm": {
+          "type": "number"
+        },
+        "cotaBocaM": {
+          "type": "number"
+        },
+        "cotaArrasamentoM": {
+          "type": "number"
+        },
+        "cotaArrasamentoGradeM": {
+          "type": "integer"
+        },
+        "areaPontaM2": {
+          "type": "number"
+        },
+        "perimetroM": {
+          "type": "number"
+        },
+        "capacidadeEstruturalTf": {
+          "type": "number"
+        },
+        "capacidadeEstruturalKn": {
+          "type": "number"
+        },
+        "cargaPrevistaTf": {
+          "type": "number"
+        },
+        "knPorTf": {
+          "type": "number"
+        },
+        "fsGlobal": {
+          "type": "number"
+        },
+        "fsLateralDecourtQuaresma": {
+          "type": "number"
+        },
+        "fsPontaDecourtQuaresma": {
+          "type": "number"
+        },
+        "fatorRedutorPonta": {
+          "type": "number"
+        },
+        "opcoes": {
+          "$ref": "#/$defs/OpcoesCargaAdmissivel"
+        },
+        "avisos": {
+          "items": {
+            "const": "verificar_contato_ponta",
+            "type": "string"
+          },
+          "type": "array"
+        },
+        "curva": {
+          "items": {
+            "$ref": "#/$defs/CotaPontaResultado"
+          },
+          "type": "array"
+        },
+        "memorial": {
+          "$ref": "#/$defs/MemorialCargaAdmissivel"
+        }
+      },
+      "required": [
+        "obraId",
+        "estacaId",
+        "sondagemId",
+        "nomeEstaca",
+        "nomeSondagem",
+        "tipoEstaca",
+        "diametroCm",
+        "cotaBocaM",
+        "cotaArrasamentoM",
+        "cotaArrasamentoGradeM",
+        "areaPontaM2",
+        "perimetroM",
+        "capacidadeEstruturalTf",
+        "capacidadeEstruturalKn",
+        "cargaPrevistaTf",
+        "knPorTf",
+        "fsGlobal",
+        "fsLateralDecourtQuaresma",
+        "fsPontaDecourtQuaresma",
+        "fatorRedutorPonta",
+        "opcoes",
+        "avisos",
+        "curva",
+        "memorial"
+      ],
+      "type": "object"
+    },
+    "SondagemResponse": {
+      "properties": {
+        "nome": {
+          "maxLength": 100,
+          "minLength": 1,
+          "type": "string"
+        },
+        "dadosCabecalho": {
+          "$ref": "#/$defs/DadosCabecalhoSondagem"
+        },
+        "leituras": {
+          "items": {
+            "$ref": "#/$defs/LeituraSondagemResponse"
+          },
+          "type": "array"
+        },
+        "id": {
+          "type": "integer"
+        },
+        "criadoEm": {
+          "format": "date-time",
+          "type": "string"
+        },
+        "atualizadoEm": {
+          "format": "date-time",
+          "type": "string"
+        }
+      },
+      "required": [
+        "nome",
+        "leituras",
+        "id",
+        "criadoEm",
+        "atualizadoEm"
+      ],
+      "type": "object"
+    },
+    "TrechoSemSPT": {
+      "additionalProperties": false,
+      "properties": {
+        "cotaTopoM": {
+          "type": "integer"
+        },
+        "cotaBaseM": {
+          "type": "integer"
+        }
+      },
+      "required": [
+        "cotaTopoM",
+        "cotaBaseM"
+      ],
+      "type": "object"
+    },
+    "Unidades": {
+      "properties": {
+        "coordenadas": {
+          "const": "m",
+          "type": "string"
+        },
+        "cotas": {
+          "const": "m",
+          "type": "string"
+        },
+        "profundidades": {
+          "const": "m",
+          "type": "string"
+        },
+        "diametros": {
+          "const": "cm",
+          "type": "string"
+        },
+        "cargas": {
+          "maxItems": 2,
+          "minItems": 2,
+          "prefixItems": [
+            {
+              "const": "tf",
+              "type": "string"
+            },
+            {
+              "const": "kN",
+              "type": "string"
+            }
+          ],
+          "type": "array"
+        },
+        "tensoes": {
+          "const": "kPa",
+          "type": "string"
+        }
+      },
+      "required": [
+        "coordenadas",
+        "cotas",
+        "profundidades",
+        "diametros",
+        "cargas",
+        "tensoes"
+      ],
+      "type": "object"
+    }
+  },
+  "properties": {
+    "formato": {
+      "const": "estacahub-relatorio",
+      "type": "string"
+    },
+    "versao": {
+      "const": "1.0.0",
+      "type": "string"
+    },
+    "geradoEm": {
+      "format": "date-time",
+      "type": "string"
+    },
+    "unidades": {
+      "$ref": "#/$defs/Unidades"
+    },
+    "modo": {
+      "const": "por_sondagem",
+      "type": "string"
+    },
+    "opcoes": {
+      "$ref": "#/$defs/OpcoesCargaAdmissivel"
+    },
+    "obra": {
+      "$ref": "#/$defs/ObraResponse"
+    },
+    "estacas": {
+      "items": {
+        "$ref": "#/$defs/EstacaResponse"
+      },
+      "type": "array"
+    },
+    "sondagens": {
+      "items": {
+        "$ref": "#/$defs/SondagemResponse"
+      },
+      "type": "array"
+    },
+    "analises": {
+      "items": {
+        "anyOf": [
+          {
+            "$ref": "#/$defs/Calculada"
+          },
+          {
+            "$ref": "#/$defs/Indisponivel"
+          }
+        ]
+      },
+      "type": "array"
+    }
+  },
+  "required": [
+    "formato",
+    "versao",
+    "geradoEm",
+    "unidades",
+    "modo",
+    "opcoes",
+    "obra",
+    "estacas",
+    "sondagens",
+    "analises"
+  ],
+  "type": "object"
+}
