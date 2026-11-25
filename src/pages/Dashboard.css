@@ -1299,3 +1299,13 @@ body:has(.dashboard-modal[open]) {
     transform: none;
   }
 }
+
+.dashboard-exemplo {
+  margin-top: 1rem;
+  border-top: 1px solid #e4e2eb;
+  padding-top: .8rem;
+  font-size: .875rem;
+}
+.dashboard-exemplo summary { width: fit-content; color: #57516a; cursor: pointer; }
+.dashboard-exemplo summary:focus-visible { outline: 2px solid #693aba; outline-offset: 3px; }
+.dashboard-exemplo p { margin: .6rem 0; line-height: 1.5; }

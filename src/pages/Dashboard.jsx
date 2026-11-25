@@ -131,7 +131,10 @@ export default function Dashboard() {
   const [pagina, setPagina] = useState(1);
   const [nomeObra, setNomeObra] = useState("");
   const [sistemaCoordenadas, setSistemaCoordenadas] = useState("local");
-  const [criando, setCriando] = useState(false);
+  const [acaoCriacao, setAcaoCriacao] = useState(null);
+  const criando = acaoCriacao !== null;
+  const [erroExemplo, setErroExemplo] = useState("");
+  const exemploRef = useRef(null);
   const [erroCriacao, setErroCriacao] = useState("");
 
   useEffect(() => {
@@ -170,6 +173,8 @@ export default function Dashboard() {
     setNomeObra("");
     setSistemaCoordenadas("local");
     setErroCriacao("");
+    setErroExemplo("");
+    exemploRef.current.open = false;
     dialogRef.current.showModal();
     nomeInputRef.current.focus();
   }
@@ -203,7 +208,8 @@ export default function Dashboard() {
       return;
     }
 
-    setCriando(true);
+    setAcaoCriacao("nova");
+    setErroExemplo("");
     setErroCriacao("");
 
     try {
@@ -216,7 +222,25 @@ export default function Dashboard() {
     } catch (error) {
       setErroCriacao(error.message || "Não foi possível criar a obra.");
     } finally {
-      setCriando(false);
+      setAcaoCriacao(null);
+    }
+  }
+
+  async function abrirExemplo() {
+    if (criando) return;
+    setAcaoCriacao("exemplo");
+    setErroExemplo("");
+    setErroCriacao("");
+    try {
+      const obra = await obrasService.abrirExemploBalsas();
+      if (!obra?.id) throw new Error("O servidor não retornou a obra de exemplo.");
+      navigate(`/obras/${obra.id}/dados`);
+    } catch (error) {
+      setErroExemplo(error.status === 404
+        ? "A obra de exemplo ainda não está disponível nesta versão do servidor."
+        : error.message || "Não foi possível carregar a obra de exemplo.");
+    } finally {
+      setAcaoCriacao(null);
     }
   }
 
@@ -820,7 +844,7 @@ export default function Dashboard() {
               disabled={criando}
               className="dashboard-button dashboard-button-primary"
             >
-              {criando ? (
+              {acaoCriacao === "nova" ? (
                 <LoaderCircle
                   size={16}
                   className="dashboard-spin"
@@ -829,10 +853,20 @@ export default function Dashboard() {
               ) : (
                 <Plus size={16} aria-hidden="true" />
               )}
-              {criando ? "Criando obra..." : "Criar obra"}
+              {acaoCriacao === "nova" ? "Criando obra..." : "Criar obra"}
             </button>
           </div>
         </form>
+        <details ref={exemploRef} className="dashboard-exemplo">
+          <summary>Usar uma obra de exemplo</summary>
+          <p>Explore o caso Balsas (MA), do GEOSPT-STRUCT, com 5 sondagens e 4 estacas.
+            Sua cópia é editável e mantém as alterações ao reabrir.</p>
+          <button type="button" disabled={criando} onClick={abrirExemplo}
+            className="dashboard-button dashboard-button-secondary">
+            {acaoCriacao === "exemplo" ? "Carregando exemplo…" : "Abrir exemplo de Balsas"}
+          </button>
+          {erroExemplo && <p className="dashboard-form-error" role="alert">{erroExemplo}</p>}
+        </details>
       </dialog>
     </div>
   );
