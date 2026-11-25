@@ -1,4 +1,4 @@
-import { formatarNumero } from "./estacas";
+import { formatarNumero } from "./estacas.js";
 
 export const OPCOES_CARGA_PADRAO = {
   desprezaUltimoMetroAtrito: true,
